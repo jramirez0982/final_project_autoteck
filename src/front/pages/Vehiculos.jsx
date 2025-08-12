@@ -103,6 +103,7 @@ export const Vehiculos = () => {
           setMensajeModal("¡El registro ha fallado, revise la informacion e intente de nuevo!");
           const modal = new bootstrap.Modal(document.getElementById('modalExito'));
           modal.show(); // Mostrar el modal en lugar de alert
+
         }
         return response.json()
       })
@@ -111,6 +112,7 @@ export const Vehiculos = () => {
         setMensajeModal("¡Vehículo registrado correctamente!");
         const modal = new bootstrap.Modal(document.getElementById('modalExito'));
         modal.show(); // Mostrar el modal en lugar de alert
+
         getVehicles()
         setShowModal(false)
       })
@@ -137,28 +139,37 @@ export const Vehiculos = () => {
               <div className="modal-content" style={{ backgroundColor: '#214f84' }}>
                 <div className="modal-header">
                   <h1 className="modal-title fs-5 text-light" id="exampleModalLabel">Registro de nuevo vehiculo</h1>
-                  <button onClick={() => { setShowModal(false) }} type="button" className="btn-close" aria-label="Close"></button>
+                  <button onClick={() => {
+                    setInfoNewCar({
+                      matricula: "",
+                      marca: "",
+                      modelo: "",
+                      year: "",
+                      user_id: ""
+                    });
+                    setShowModal(false)
+                  }} type="button" className="btn-close" aria-label="Close"></button>
                 </div>
                 <div className="modal-body text-start">
-                  <form onSubmit={crearVehiculo}>
+                  <form key={showModal ? 'open' : 'closed'} onSubmit={crearVehiculo}>
                     <div className="mb-3">
                       <label for="matricula" className="col-form-label text-light text-start">Matricula:</label>
-                      <input type="text" className="form-control" id="matricula"
+                      <input type="text" className="form-control" id="matricula" value={infoNewCar.matricula}
                         onChange={(e) => setInfoNewCar({ ...infoNewCar, matricula: e.target.value })} />
                     </div>
                     <div className="mb-3">
                       <label for="marca" className="col-form-label text-light text-start">Marca:</label>
-                      <input type="text" className="form-control" id="marca"
+                      <input type="text" className="form-control" id="marca" value={infoNewCar.marca}
                         onChange={(e) => setInfoNewCar({ ...infoNewCar, marca: e.target.value })} />
                     </div>
                     <div className="mb-3">
                       <label for="modelo" className="col-form-label text-light text-start">Modelo:</label>
-                      <input type="text" className="form-control" id="modelo"
+                      <input type="text" className="form-control" id="modelo" value={infoNewCar.modelo}
                         onChange={(e) => setInfoNewCar({ ...infoNewCar, modelo: e.target.value })} />
                     </div>
                     <div className="mb-3">
                       <label for="year" className="col-form-label text-light text-start">Año:</label>
-                      <input type="text" className="form-control" id="year"
+                      <input type="text" className="form-control" id="year" value={infoNewCar.year}
                         onChange={(e) => setInfoNewCar({ ...infoNewCar, year: e.target.value })} />
                     </div>
                     <div className="modal-footer">
@@ -192,8 +203,23 @@ export const Vehiculos = () => {
           }
 
         </div>
-        <button onClick={() => { setShowModal(true) }} type="button" class="btn btn-primary btn-lg mt-4"
-            data-bs-whatever="@mdo">Registra un nuevo vehiculo</button>
+        <button
+          onClick={() => {
+            // Limpiar el formulario antes de abrir el modal
+            setInfoNewCar({
+              matricula: "",
+              marca: "",
+              modelo: "",
+              year: "",
+              user_id: ""
+            });
+            setShowModal(true);
+          }}
+          type="button"
+          className="btn btn-primary btn-lg mt-4"
+        >
+          Registra un nuevo vehiculo
+        </button>
 
       </div>
 
