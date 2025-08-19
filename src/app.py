@@ -310,9 +310,9 @@ def crear_mis_vehiculos():
     print(user_current)
     print(user_current.id_user)
     id_propietario = user_current.id_user
-    new_matricula = user_current
+    name_user = user_current
     print("voy a impimir userCurrent")
-    print(new_matricula)
+    print(name_user)
     
     body = request.get_json(silent = True)
     if body is None:
@@ -326,8 +326,17 @@ def crear_mis_vehiculos():
     if 'year' not in body:
         return jsonify({'msg': 'debes enviar el año del vehiculo'}), 400
     if 'user_id' not in body:
-        return jsonify({'msg': 'Debes enviar el Id de un usuario existente'})
+        return jsonify({'msg': 'Debes enviar el Id de un usuario existente'}), 400
 
+    matricula_a_verificar = body['matricula']
+
+    usuario=db.session.get(User,id_propietario)
+    lista_matriculas=[]
+    for v in usuario.vehiculos:
+        if matricula_a_verificar == v.matricula:
+            return jsonify({'msg': "El vehiculo ya esta registrado"}), 400
+
+     
     new_car = Vehiculos()
     new_car.matricula = body['matricula']
     new_car.marca = body['marca']
