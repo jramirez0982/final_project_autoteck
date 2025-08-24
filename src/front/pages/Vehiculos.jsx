@@ -89,6 +89,9 @@ export const Vehiculos = () => {
     console.log(infoNewCar)
     console.log("estoy creando vehiculos")
     const token = localStorage.getItem("jwt_token")
+    console.log("imprimire el token y el tipo de dato")
+    console.log(token)
+
 
     fetch(import.meta.env.VITE_BACKEND_URL + "crear_mis_vehiculos", {
       method: "POST",
@@ -98,25 +101,29 @@ export const Vehiculos = () => {
         "authorization": 'Bearer ' + token
       }
     })
-      .then((response) => {
-        if (!response.ok) {
-          setMensajeModal("¡El registro ha fallado, revise la informacion e intente de nuevo!");
-          const modal = new bootstrap.Modal(document.getElementById('modalExito'));
-          modal.show(); // Mostrar el modal en lugar de alert
-
-        }
-        return response.json()
-      })
+      .then((response) => response.json().catch(() => ({})))
+      
       .then((data) => {
         console.log(data.msg)
-        setMensajeModal("¡Vehículo registrado correctamente!");
-        const modal = new bootstrap.Modal(document.getElementById('modalExito'));
-        modal.show(); // Mostrar el modal en lugar de alert
-
-        getVehicles()
-        setShowModal(false)
+        if (data.msg === "ok") {
+          setMensajeModal("¡Vehículo registrado correctamente!");
+          const modal = new bootstrap.Modal(document.getElementById('modalExito'));
+          modal.show();
+          setShowModal(false)
+        }// Mostrar el modal en lugar de alert
+        else {
+          setMensajeModal("¡Error al hacer el registro!, " + data.msg);
+          const modal = new bootstrap.Modal(document.getElementById('modalExito'));
+          modal.show();
+          setShowModal(false)
+        }
+        
       })
       .catch((error) => { error })
+      .finally(() => {
+        //Siempre se ejecuta, éxito o error
+        getVehicles();
+      });
   }
 
   useEffect(() => {

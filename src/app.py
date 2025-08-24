@@ -313,37 +313,34 @@ def crear_mis_vehiculos():
     name_user = user_current
     print("voy a impimir userCurrent")
     print(name_user)
-    
+                                    
     body = request.get_json(silent = True)
     if body is None:
         return jsonify({'msg': 'debes enviar informacion del vehiculo en el body'}), 400
-    if 'matricula' not in body:
+    if 'matricula' not in body or body['matricula']=="":
         return jsonify({'msg': 'debes enviar la matricula del vehiculo'}), 400
-    if 'marca' not in body:
+    if 'marca' not in body or body['marca']=="":
         return jsonify({'msg': 'debes enviar la marca del vehiculo'}), 400
-    if 'modelo' not in body:
+    if 'modelo' not in body or body['modelo']=="":
         return jsonify({'msg': 'debes enviar el modelo del vehiculo'}), 400
-    if 'year' not in body:
+    if 'year' not in body or body['year']=="":
         return jsonify({'msg': 'debes enviar el año del vehiculo'}), 400
-    if 'user_id' not in body:
-        return jsonify({'msg': 'Debes enviar el Id de un usuario existente'}), 400
+    
+    print("Si ves este print, el return NO funcionó")
 
     matricula_a_verificar = body['matricula']
-
     usuario=db.session.get(User,id_propietario)
     lista_matriculas=[]
     for v in usuario.vehiculos:
         if matricula_a_verificar == v.matricula:
             return jsonify({'msg': "El vehiculo ya esta registrado"}), 400
 
-     
     new_car = Vehiculos()
     new_car.matricula = body['matricula']
     new_car.marca = body['marca']
     new_car.modelo = body['modelo']
     new_car.year = body['year']
     new_car.user_id = id_propietario
-
     db.session.add(new_car)
     db.session.commit()
     return jsonify({'msg': 'ok', 'Vehiculo': new_car.serialize()})
