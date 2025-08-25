@@ -10,7 +10,6 @@ export const InicioMecanico = () => {
 
 
   function traer_ordenes_de_servicio() {
-
     const token = localStorage.getItem("jwt_token")
     fetch(import.meta.env.VITE_BACKEND_URL + "ordenes_de_trabajo", {
       method: "GET",
@@ -26,6 +25,13 @@ export const InicioMecanico = () => {
       .then((data) => {
         console.log(data.ordenes_de_trabajo)
         setOrdenDeTrabajo(data.ordenes_de_trabajo)
+
+        // ✅ CORRECCIÓN: marcar las órdenes finalizadas al cargar
+        const finalizadas = data.ordenes_de_trabajo
+          .filter(o => o.estado_servicio === "FINALIZADO")
+          .map(o => o.id_ot);
+
+        setOrdenesFinalizadas(finalizadas);
       })
       .catch((error) => { error })
   }
@@ -52,8 +58,14 @@ export const InicioMecanico = () => {
       fecha_final = null
     }
     else {
-      fecha_final = fecha_final
-      setOrdenesFinalizadas((prev) => [...prev, id_ot]);
+      if (fecha_final == null) {
+        return alert("debes ingresar la fecha de finalizacion de la orden de servicio")
+      }
+      else {
+        fecha_final = fecha_final
+        cerrarDropdown(id_ot);
+        setOrdenesFinalizadas((prev) => [...prev, id_ot]);
+      }
     }
     console.log("va de nuevo")
     console.log(estado_servicio)
@@ -84,11 +96,8 @@ export const InicioMecanico = () => {
         console.log(data.msg)
 
         const alertContainer = document.getElementById("alert-container");
-        alertContainer.innerHTML = `
-    <div class="alert alert-success" role="alert">
-      Orden actualizada correctamente.
-    </div>
-  `;
+        alertContainer.innerHTML = `<div class="alert alert-success" role="alert">
+        Orden actualizada correctamente.</div>`;
         setTimeout(() => {
           alertContainer.innerHTML = "";
         }, 5000);
@@ -161,7 +170,7 @@ export const InicioMecanico = () => {
                             [orden.id_ot]: e.target.value
                           }))
                         }
-                        disabled={ordenesFinalizadas.includes(orden.id_ot)}
+                        disabled={ordenesFinalizadas.includes(orden.id_ot)} // ✅ funciona bien ahora
                       />
                     ) : orden.fecha_final.slice(0, 16)}
                   </td>
@@ -173,7 +182,7 @@ export const InicioMecanico = () => {
                         type="button"
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
-                        disabled={ordenesFinalizadas.includes(orden.id_ot)}
+                        disabled={orden.fecha_final ? true : false} // 🔒 Bloquea si tiene fecha
                       >
                         Modificar Estado
                       </button>
