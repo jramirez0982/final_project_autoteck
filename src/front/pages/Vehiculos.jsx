@@ -133,7 +133,7 @@ export const Vehiculos = () => {
 
   return (
     <div>
-
+      
       <div className='container text-center mt-5 mb-3'>
         <div>
           <h1 className="d-inline-block px-5 py-2 border border-primary-subtle rounded-pill text-light" style={{ backgroundColor: '#003366' }}>Mis Vehiculos</h1>

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { NavbarUser } from "../components/NavbarUser";
 
 export const NuevaOrden = () => {
     const navigate = useNavigate();
+
+    
 
     const [formData, setFormData] = useState({
         fecha_ingreso: "",
@@ -19,6 +22,7 @@ export const NuevaOrden = () => {
     const [servicios, setServicios] = useState([]);
     const [mecanicos, setMecanicos] = useState([]);
     const [id_orden, setId_Orden] = useState([]);
+    const [cuadroAlerta, setCuadroAlerta] = useState(null)
 
 
     const handleCancel = () => {
@@ -51,6 +55,7 @@ export const NuevaOrden = () => {
 
     //  Buscar usuario y cargar sus vehículos
     const buscarUsuario = async () => {
+        
         try {
             const response = await fetch(import.meta.env.VITE_BACKEND_URL + "usuarios/" + `${identificacion}`);
             const data = await response.json();
@@ -58,24 +63,27 @@ export const NuevaOrden = () => {
             if (response.ok) {
                 setUsuario(data);
                 setFormData({ ...formData, usuario_id: data.id_user });
+                setCuadroAlerta(true)
 
                 // Traer vehículos del usuario
                 const vehiculosRes = await fetch(import.meta.env.VITE_BACKEND_URL + "usuarios/" + `${data.id_user}/vehiculos`);
                 const vehiculosData = await vehiculosRes.json();
                 setVehiculos(vehiculosData);
             } else {
-                alert("❌ Usuario no encontrado");
+                
                 setUsuario(null);
                 setVehiculos([]);
+                setCuadroAlerta(false)
             }
         } catch (error) {
             console.error("❌ Error buscando usuario:", error);
+            setCuadroAlerta(false)
         }
     };
 
     // 🔄 Manejar cambios en campos simples
     const handleChange = (e) => {
-        formData.estado_servicio="INGRESADO"
+        formData.estado_servicio = "INGRESADO"
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -148,96 +156,106 @@ export const NuevaOrden = () => {
     };
 
     return (
+        <div>
+            <NavbarUser />
+            <div className="container">
 
-        <div className="container">
-            <h2 className="mb-3 mt-5 ">📄 Nueva Orden de Servicio</h2>
+                <h3 className="mb-3 mt-5 text-center "> Nueva Orden de Servicio</h3>
 
-            {/* 🔍 Buscar usuario */}
-            <div className="mb-3 d-flex">
-                <input
-                    type="text"
-                    className="form-control me-2"
-                    placeholder="Ingrese identificación del usuario"
-                    value={identificacion}
-                    onChange={(e) => setIdentificacion(e.target.value)}
-                />
-                <button type="button" className="btn btn-info text-white" onClick={buscarUsuario}>
-                    Buscar Usuario
-                </button>
+                {/* 🔍 Buscar usuario */}
+                <div className="mb-3 d-flex align-items-start mt-5">
+                    <input
+                        type="text"
+                        className="form-control me-2 w-25 "
+                        placeholder="Ingrese identificación del usuario"
+                        value={identificacion}
+                        onChange={(e) => setIdentificacion(e.target.value)}
+                    />
+                    <button type="button" className="btn btn-info text-white" onClick={buscarUsuario}>
+                        Buscar Usuario
+                    </button>
+                    {/* ✅ Mostrar info del usuario en pantalla */}
+                    {cuadroAlerta == true && (
+                        <div className="alert alert-success ms-3 ps-3 flex-grow-1">
+                            <h5>✅ Datos del Cliente</h5>
+                            <p><strong>Nombre:</strong> {usuario.nombre}</p>
+                            <p><strong>Email:</strong> {usuario.email}</p>
+                            <p><strong>Teléfono:</strong> {usuario.telefono}</p>
+                        </div>
+                    )}  
+                    {cuadroAlerta == false && (
+                        <div className="alert alert-danger ms-3 ps-3 flex-grow-1">
+                            <h5>❌ Usuario no encontrado</h5>
+                            <p>Verifique la identificación ingresada.</p>
+                        </div>
+                    )}
+                </div>
+
+
+
+                {/*  Formulario de orden */}
+                <form onSubmit={handleSubmit}>
+                    {/* Fecha */}
+                    <div className="mb-3">
+                        <label className="form-label">Fecha de Ingreso</label>
+                        <input type="date" name="fecha_ingreso" className="form-control" onChange={handleChange} value={formData.fecha_ingreso} />
+                    </div>
+
+                    {/* Estado */}
+
+
+                    {/* Vehículos del usuario */}
+                    <div className="mb-3">
+                        <label className="form-label">Vehículo</label>
+                        <select name="vehiculo_id" className="form-control" onChange={handleChange} value={formData.vehiculo_id}>
+                            <option value="">Seleccione un vehículo</option>
+                            {vehiculos.map((v) => (
+                                <option key={v.id_vehiculo} value={v.id_vehiculo}>
+                                    {v.marca} {v.modelo} - {v.matricula}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Mecánico */}
+                    <div className="mb-3">
+                        <label className="form-label">Mecánico</label>
+                        <select name="mecanico_id" className="form-control" onChange={handleChange} value={formData.mecanico_id}>
+                            <option value="">Seleccione un mecánico</option>
+                            {mecanicos.map((m) => (
+                                <option key={m.id_user} value={m.id_user}>
+                                    {m.nombre} - {m.email}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Servicios múltiples */}
+                    <div className="mb-3">
+                        <label className="form-label">Servicios</label>
+                        <select name="servicios" className="form-control" multiple onChange={handleChangeServicios}>
+                            {servicios.map((s) => (
+                                <option key={s.id_service} value={s.id_service}>
+                                    {s.name_service} - ${s.price}
+                                </option>
+                            ))}
+                        </select>
+                        <small className="form-text text-muted">Puedes seleccionar varios servicios (Ctrl+Click)</small>
+                    </div>
+                    <div className="d-flex justify-content-between">
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={handleCancel}
+                        >
+                            Cancelar
+                        </button>
+                        <button type="submit" className="btn btn-primary">
+                            Crear Orden
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            {/* ✅ Mostrar info del usuario en pantalla */}
-            {usuario && (
-                <div className="alert alert-success">
-                    <h5>✅ Datos del Cliente</h5>
-                    <p><strong>Nombre:</strong> {usuario.nombre}</p>
-                    <p><strong>Email:</strong> {usuario.email}</p>
-                    <p><strong>Teléfono:</strong> {usuario.telefono}</p>
-                </div>
-            )}
-
-            {/*  Formulario de orden */}
-            <form onSubmit={handleSubmit}>
-                {/* Fecha */}
-                <div className="mb-3">
-                    <label className="form-label">Fecha de Ingreso</label>
-                    <input type="date" name="fecha_ingreso" className="form-control" onChange={handleChange} value={formData.fecha_ingreso} />
-                </div>
-
-                {/* Estado */}
-             
-
-                {/* Vehículos del usuario */}
-                <div className="mb-3">
-                    <label className="form-label">Vehículo</label>
-                    <select name="vehiculo_id" className="form-control" onChange={handleChange} value={formData.vehiculo_id}>
-                        <option value="">Seleccione un vehículo</option>
-                        {vehiculos.map((v) => (
-                            <option key={v.id_vehiculo} value={v.id_vehiculo}>
-                                {v.marca} {v.modelo} - {v.matricula}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Mecánico */}
-                <div className="mb-3">
-                    <label className="form-label">Mecánico</label>
-                    <select name="mecanico_id" className="form-control" onChange={handleChange} value={formData.mecanico_id}>
-                        <option value="">Seleccione un mecánico</option>
-                        {mecanicos.map((m) => (
-                            <option key={m.id_user} value={m.id_user}>
-                                {m.nombre} - {m.email}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Servicios múltiples */}
-                <div className="mb-3">
-                    <label className="form-label">Servicios</label>
-                    <select name="servicios" className="form-control" multiple onChange={handleChangeServicios}>
-                        {servicios.map((s) => (
-                            <option key={s.id_service} value={s.id_service}>
-                                {s.name_service} - ${s.price}
-                            </option>
-                        ))}
-                    </select>
-                    <small className="form-text text-muted">Puedes seleccionar varios servicios (Ctrl+Click)</small>
-                </div>
-                <div className="d-flex justify-content-between">
-                    <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={handleCancel}
-                    >
-                        Cancelar
-                    </button>
-                    <button type="submit" className="btn btn-primary">
-                        Crear Orden
-                    </button>
-                </div>
-            </form>
         </div>
     );
 };
